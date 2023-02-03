@@ -6,10 +6,17 @@ import {
   Put,
   Param,
   Delete,
+  HttpException,
+  HttpStatus,
+  UseFilters,
+  HttpCode,
 } from '@nestjs/common';
 import { ArtistService } from '../services/artist.service';
 import { CreateArtistDto } from '../types/artist';
+import { QueryParams } from '../types/common';
+import { HttpExceptionFilter } from '../shared/http-exception.filter';
 
+@UseFilters(new HttpExceptionFilter())
 @Controller('/artist')
 export class ArtistController {
   constructor(private readonly userService: ArtistService) {}
@@ -20,7 +27,8 @@ export class ArtistController {
   }
 
   @Get(':id')
-  getById(@Param() params: { id: string }) {
+  async getById(@Param() params: QueryParams) {
+    await this.checkIfArtistExists(params.id);
     return this.userService.getById(params.id);
   }
 
@@ -30,15 +38,27 @@ export class ArtistController {
   }
 
   @Put(':id')
-  update(
-    @Param() params: { id: string },
+  async update(
+    @Param() params: QueryParams,
     @Body() createUserDTO: CreateArtistDto,
   ) {
+    await this.checkIfArtistExists(params.id);
+
     return this.userService.update(params.id, createUserDTO);
   }
 
   @Delete(':id')
-  delete(@Param() params: { id: string }) {
+  @HttpCode(204)
+  async delete(@Param() params: QueryParams) {
+    await this.checkIfArtistExists(params.id);
     return this.userService.delete(params.id);
+  }
+
+  async checkIfArtistExists(id: string) {
+    const artist = await this.userService.getById(id);
+
+    if (!artist) {
+      throw new HttpException('Artist is not found', HttpStatus.NOT_FOUND);
+    }
   }
 }

@@ -1,18 +1,23 @@
 import { IsUUID } from 'class-validator';
 
-export class AlbumDto {
+export class TrackDto {
   id: string;
   name: string;
-  year: number;
 
   @IsUUID()
   artistId: string | null;
+
+  @IsUUID()
+  albumId: string | null;
+  duration: number;
 }
 
-export class CreateAlbumDto {
+export class CreateTrackDto {
   name: string;
-  year: number;
-
   @IsUUID()
   artistId: string | null;
+
+  @IsUUID()
+  albumId: string | null;
+  duration: number;
 }

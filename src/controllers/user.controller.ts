@@ -6,10 +6,17 @@ import {
   Put,
   Param,
   Delete,
+  HttpException,
+  HttpStatus,
+  UseFilters,
+  HttpCode,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateUserDto } from '..//types/user';
+import { QueryParams } from '../types/common';
+import { HttpExceptionFilter } from 'src/shared/http-exception.filter';
 
+@UseFilters(new HttpExceptionFilter())
 @Controller('/user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -20,8 +27,10 @@ export class UserController {
   }
 
   @Get(':id')
-  getById(@Param() params: { id: string }) {
-    return this.userService.getById(params.id);
+  async getById(@Param() params: QueryParams) {
+    await this.checkIfUserExists(params.id);
+
+    return await this.userService.getById(params.id);
   }
 
   @Post()
@@ -30,15 +39,28 @@ export class UserController {
   }
 
   @Put(':id')
-  update(
-    @Param() params: { id: string },
+  async update(
+    @Param() params: QueryParams,
     @Body() createUserDTO: CreateUserDto,
   ) {
-    return this.userService.update(params.id, createUserDTO);
+    await this.checkIfUserExists(params.id);
+
+    return await this.userService.update(params.id, createUserDTO);
   }
 
   @Delete(':id')
-  delete(@Param() params: { id: string }) {
-    return this.userService.delete(params.id);
+  @HttpCode(204)
+  async delete(@Param() params: QueryParams) {
+    await this.checkIfUserExists(params.id);
+
+    return await this.userService.delete(params.id);
+  }
+
+  async checkIfUserExists(id: string) {
+    const user = await this.userService.getById(id);
+
+    if (!user) {
+      throw new HttpException('Album is not found', HttpStatus.NOT_FOUND);
+    }
   }
 }
