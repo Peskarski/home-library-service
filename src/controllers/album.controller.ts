@@ -12,7 +12,12 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { HttpExceptionFilter } from '../shared/http-exception.filter';
-import { AlbumService, ArtistService } from '../services';
+import {
+  AlbumService,
+  ArtistService,
+  TrackService,
+  FavouritesService,
+} from '../services';
 import { CreateAlbumDto } from '../types/album';
 import { QueryParams } from '../types/common';
 
@@ -22,6 +27,8 @@ export class AlbumController {
   constructor(
     private readonly albumService: AlbumService,
     private readonly artistService: ArtistService,
+    private readonly trackService: TrackService,
+    private readonly favouritesService: FavouritesService,
   ) {}
 
   @Get()
@@ -67,6 +74,22 @@ export class AlbumController {
   @HttpCode(204)
   async delete(@Param() params: QueryParams) {
     await this.checkIfAlbumExists(params.id);
+
+    const tracks = await this.trackService.getAll();
+    tracks.map((track) => {
+      if (track.albumId === params.id) {
+        track.albumId = null;
+      }
+    });
+
+    await this.trackService.setTracks(tracks);
+
+    const favs = await this.favouritesService.getAll();
+    const favAlbums = favs.albums;
+
+    if (favAlbums.find((id) => id === params.id)) {
+      await this.favouritesService.deleteAlbum(params.id);
+    }
 
     return await this.albumService.delete(params.id);
   }

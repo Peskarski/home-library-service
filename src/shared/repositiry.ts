@@ -27,7 +27,10 @@ class Repository<T extends { id?: string }> {
 
     this.entries.push(newEntry as T);
 
-    return newEntry;
+    return {
+      ...newEntry,
+      password: undefined,
+    };
   }
 
   async delete(id: string) {
@@ -46,7 +49,10 @@ class Repository<T extends { id?: string }> {
 
     this.entries.splice(entryIndex, 1, updatedEntry as T);
 
-    return updatedEntry;
+    return {
+      ...updatedEntry,
+      password: undefined,
+    };
   }
 }
 

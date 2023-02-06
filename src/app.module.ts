@@ -4,12 +4,14 @@ import {
   ArtistController,
   AlbumController,
   TrackController,
+  FavouritesController,
 } from './controllers';
 import {
   UserService,
   ArtistService,
   AlbumService,
   TrackService,
+  FavouritesService,
 } from './services';
 
 @Module({
@@ -19,7 +21,14 @@ import {
     ArtistController,
     AlbumController,
     TrackController,
+    FavouritesController,
   ],
-  providers: [UserService, ArtistService, AlbumService, TrackService],
+  providers: [
+    UserService,
+    ArtistService,
+    AlbumService,
+    TrackService,
+    FavouritesService,
+  ],
 })
 export class AppModule {}

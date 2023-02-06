@@ -11,7 +11,12 @@ import {
   UseFilters,
   HttpCode,
 } from '@nestjs/common';
-import { TrackService, ArtistService, AlbumService } from '../services';
+import {
+  TrackService,
+  ArtistService,
+  AlbumService,
+  FavouritesService,
+} from '../services';
 import { CreateTrackDto } from '../types/track';
 import { QueryParams } from '../types/common';
 import { HttpExceptionFilter } from '../shared/http-exception.filter';
@@ -23,6 +28,7 @@ export class TrackController {
     private readonly trackService: TrackService,
     private readonly artistService: ArtistService,
     private readonly albumService: AlbumService,
+    private readonly favouritesService: FavouritesService,
   ) {}
 
   @Get()
@@ -73,6 +79,13 @@ export class TrackController {
   @HttpCode(204)
   async delete(@Param() params: QueryParams) {
     await this.checkIfTrackExists(params.id);
+
+    const favs = await this.favouritesService.getAll();
+    const favTracks = favs.tracks;
+
+    if (favTracks.find((id) => id === params.id)) {
+      await this.favouritesService.deleteTrack(params.id);
+    }
 
     return this.trackService.delete(params.id);
   }

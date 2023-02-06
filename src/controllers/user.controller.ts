@@ -12,7 +12,7 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
-import { CreateUserDto } from '..//types/user';
+import { CreateUserDto, UpdateUserDto } from '..//types/user';
 import { QueryParams } from '../types/common';
 import { HttpExceptionFilter } from 'src/shared/http-exception.filter';
 
@@ -35,17 +35,44 @@ export class UserController {
 
   @Post()
   create(@Body() createUserDTO: CreateUserDto) {
-    return this.userService.create(createUserDTO);
+    const userWithVersion = {
+      version: 1,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      ...createUserDTO,
+    };
+
+    return this.userService.create(userWithVersion);
   }
 
   @Put(':id')
   async update(
     @Param() params: QueryParams,
-    @Body() createUserDTO: CreateUserDto,
+    @Body() updateUserDTO: UpdateUserDto,
   ) {
     await this.checkIfUserExists(params.id);
 
-    return await this.userService.update(params.id, createUserDTO);
+    const user = await this.userService.getById(params.id);
+
+    console.log(user.password, updateUserDTO.oldPassword);
+
+    if (user.password !== updateUserDTO.oldPassword) {
+      throw new HttpException(
+        'Old password does not match the one provided',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const updatedUser = {
+      ...user,
+      password: updateUserDTO.newPassword,
+      version: user.version + 1,
+      updatedAt: Date.now(),
+    };
+
+    console.log(updateUserDTO);
+
+    return await this.userService.update(params.id, updatedUser);
   }
 
   @Delete(':id')

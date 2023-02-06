@@ -1,23 +1,23 @@
-import { IsUUID } from 'class-validator';
+import { IsUUID, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class TrackDto {
   id: string;
   name: string;
-
-  @IsUUID()
   artistId: string | null;
-
-  @IsUUID()
   albumId: string | null;
   duration: number;
 }
 
 export class CreateTrackDto {
+  @IsNotEmpty()
   name: string;
+
   @IsUUID()
   artistId: string | null;
 
   @IsUUID()
   albumId: string | null;
+
+  @IsNumber()
   duration: number;
 }

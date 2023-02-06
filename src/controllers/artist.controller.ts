@@ -11,7 +11,7 @@ import {
   UseFilters,
   HttpCode,
 } from '@nestjs/common';
-import { ArtistService } from '../services/artist.service';
+import { ArtistService, FavouritesService, TrackService } from '../services';
 import { CreateArtistDto } from '../types/artist';
 import { QueryParams } from '../types/common';
 import { HttpExceptionFilter } from '../shared/http-exception.filter';
@@ -19,7 +19,11 @@ import { HttpExceptionFilter } from '../shared/http-exception.filter';
 @UseFilters(new HttpExceptionFilter())
 @Controller('/artist')
 export class ArtistController {
-  constructor(private readonly userService: ArtistService) {}
+  constructor(
+    private readonly userService: ArtistService,
+    private readonly trackService: TrackService,
+    private readonly favouritesService: FavouritesService,
+  ) {}
 
   @Get()
   getAll() {
@@ -51,6 +55,23 @@ export class ArtistController {
   @HttpCode(204)
   async delete(@Param() params: QueryParams) {
     await this.checkIfArtistExists(params.id);
+
+    const tracks = await this.trackService.getAll();
+    tracks.map((track) => {
+      if (track.artistId === params.id) {
+        track.artistId = null;
+      }
+    });
+
+    const favs = await this.favouritesService.getAll();
+    const favArtists = favs.artists;
+
+    if (favArtists.find((id) => id === params.id)) {
+      await this.favouritesService.deleteArtist(params.id);
+    }
+
+    await this.trackService.setTracks(tracks);
+
     return this.userService.delete(params.id);
   }
 
