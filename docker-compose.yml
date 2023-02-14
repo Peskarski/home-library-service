@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  nest_api:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    image: api:latest
+    container_name: home-library
+    ports:
+      - ${PORT}:${PORT}
+    restart: always
+    volumes:
+      - ./:/app/src
+      - /app/node_modules
+    networks:
+      - custom-database-network
+
+networks:
+  custom-database-network:
+    driver: bridge
