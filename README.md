@@ -10,6 +10,11 @@
 ```
 git clone https://github.com/Peskarski/nodejs2022Q4-service.git
 ```
+## Checkout to development branch
+
+```
+git checkout feature/containerization
+```
 
 ## Installing NPM modules
 
@@ -37,36 +42,14 @@ To run all tests without authorization
 npm run test
 ```
 
-To run only one of all test suites
-
-```
-npm run test -- <path to suite>
-```
-
-To run all test with authorization
-
-```
-npm run test:auth
-```
-
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
-```
-
-### Auto-fix and format
+### Run lint
 
 ```
 npm run lint
 ```
 
+### Scan images for vulnerabilities
+
 ```
-npm run format
+npm run scan
 ```
-
-### Debugging in VSCode
-
-Press <kbd>F5</kbd> to debug.
-
-For more information, visit: https://code.visualstudio.com/docs/editor/debugging
